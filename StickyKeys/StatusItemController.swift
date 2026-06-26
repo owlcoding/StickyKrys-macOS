@@ -35,11 +35,11 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
     private func updateStatusItem() {
         guard let button = statusItem.button else { return }
-        button.image = NSImage.icon1
-//        button.image = NSImage(
-//            systemSymbolName: "keyboard.badge.ellipsis",
-//            accessibilityDescription: "StickyKeys"
-//        )
+//        button.image = NSImage.icon1
+        button.image = NSImage(
+            systemSymbolName: "shift.fill",
+            accessibilityDescription: "StickyKeys"
+        )
         button.title = ""
         button.toolTip  = "StickyKeys — \(controller.modifierState.statusText)"
     }
@@ -56,6 +56,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
         menu.addItem(.separator())
 
+        addAction("Onboarding…", action: #selector(openOnboarding))
         addAction("Options…", action: #selector(openOptions))
         addAction("About StickyKeys…", action: #selector(openAbout))
 
@@ -102,6 +103,10 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
     @objc private func openOptions() {
         controller.showOptions()
+    }
+
+    @objc private func openOnboarding() {
+        controller.showOnboarding()
     }
 
     @objc private func openAbout() {

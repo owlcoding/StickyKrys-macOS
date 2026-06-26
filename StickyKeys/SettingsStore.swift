@@ -35,6 +35,7 @@ final class SettingsStore: ObservableObject {
         static let legacyCapsLockEnabled = "capsLockEnabled"
         static let rightOptionEnabled = "rightOptionEnabled"
         static let rightCommandEnabled = "rightCommandEnabled"
+        static let onboardingCompleted = "onboardingCompleted"
     }
 
     /// Strona klawiatury, z której klawisze modyfikujące są przejmowane jako sticky.
@@ -65,6 +66,12 @@ final class SettingsStore: ObservableObject {
     /// Informuje, czy co najmniej jeden wyzwalacz wymaga aktywnego event tapu.
     var capturesAnyTrigger: Bool {
         rightShiftEnabled || rightOptionEnabled || rightCommandEnabled
+    }
+
+    /// Informuje, czy użytkownik zakończył pierwszy onboarding.
+    var onboardingCompleted: Bool {
+        get { defaults.bool(forKey: Key.onboardingCompleted) }
+        set { defaults.set(newValue, forKey: Key.onboardingCompleted) }
     }
 
     private let defaults: UserDefaults

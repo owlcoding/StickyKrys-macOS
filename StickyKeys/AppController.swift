@@ -25,6 +25,10 @@ final class AppController: NSObject {
         launchAtLogin: launchAtLogin,
         permissions: permissions
     )
+    private lazy var onboardingWindow = OnboardingWindowController(
+        settings: settings,
+        modifierState: modifierState
+    )
     private lazy var aboutWindow = AboutWindowController()
     private var cancellables = Set<AnyCancellable>()
     private var permissionTimer: Timer?
@@ -112,6 +116,8 @@ final class AppController: NSObject {
             Task { @MainActor [weak self] in
                 self?.showOptions()
             }
+        } else {
+            showOnboardingIfNeeded()
         }
 
         permissionTimer = Timer.scheduledTimer(
@@ -137,6 +143,11 @@ final class AppController: NSObject {
         optionsWindow.show()
     }
 
+    /// Wyświetla przewodnik po działaniu aplikacji.
+    func showOnboarding() {
+        onboardingWindow.show()
+    }
+
     /// Displays information about the application and its authors.
     func showAbout() {
         aboutWindow.show()
@@ -145,6 +156,13 @@ final class AppController: NSObject {
     /// Natychmiast odświeża stan uprawnień oraz zależny od niego event tap.
     func refreshPermissionStatus() {
         refreshPermissions()
+    }
+
+    private func showOnboardingIfNeeded() {
+        guard !settings.onboardingCompleted else { return }
+        Task { @MainActor [weak self] in
+            self?.showOnboarding()
+        }
     }
 
     private func updateEventTap() {
@@ -173,6 +191,10 @@ final class AppController: NSObject {
         if previousAccessibility != permissions.accessibilityGranted
             || previousInputMonitoring != permissions.inputMonitoringGranted {
             updateEventTap()
+        }
+
+        if !previousAccessibility, permissions.accessibilityGranted {
+            showOnboardingIfNeeded()
         }
     }
 }
