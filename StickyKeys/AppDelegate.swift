@@ -5,9 +5,14 @@ import AppKit
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItemController: StatusItemController?
     private var modifierHUDController: ModifierHUDController?
+    private let applicationLocationManager = ApplicationLocationManager()
 
     /// Konfiguruje aplikację jako akcesorium i uruchamia jej kontrolery interfejsu.
     func applicationDidFinishLaunching(_ notification: Notification) {
+        if applicationLocationManager.moveToApplicationsIfNeeded() {
+            return
+        }
+
         // LSUIElement hides the Dock icon; this is also set explicitly to avoid a
         // transient Dock icon when running an unsigned Debug build from Xcode.
         NSApp.setActivationPolicy(.accessory)
