@@ -20,7 +20,11 @@ final class AppController: NSObject {
         settings: settings,
         modifierState: modifierState
     )
-    private lazy var permissionsWindow = PermissionsWindowController(permissions: permissions)
+    private lazy var optionsWindow = OptionsWindowController(
+        settings: settings,
+        launchAtLogin: launchAtLogin,
+        permissions: permissions
+    )
     private lazy var aboutWindow = AboutWindowController()
     private var cancellables = Set<AnyCancellable>()
     private var permissionTimer: Timer?
@@ -28,23 +32,36 @@ final class AppController: NSObject {
 
     private override init() {
         super.init()
+        settings.$triggerSide
+            .dropFirst()
+            .sink { [weak self] _ in
+                self?.performAfterSettingsChange {
+                    $0.modifierState.cancel()
+                    $0.eventTap.resetTrackedState()
+                    $0.updateEventTap()
+                }
+            }
+            .store(in: &cancellables)
+
         settings.$rightShiftEnabled
             .dropFirst()
             .sink { [weak self] enabled in
-                guard let self else { return }
-                if !enabled, self.modifierState.pending == .shift || self.modifierState.locked == .shift {
-                    self.modifierState.cancel()
+                self?.performAfterSettingsChange {
+                    if !enabled, $0.modifierState.pending == .shift || $0.modifierState.locked == .shift {
+                        $0.modifierState.cancel()
+                    }
+                    $0.updateEventTap()
                 }
-                self.updateEventTap()
             }
             .store(in: &cancellables)
 
         settings.$rightShiftLockEnabled
             .dropFirst()
             .sink { [weak self] enabled in
-                guard let self else { return }
-                if !enabled, self.modifierState.locked == .shift {
-                    self.modifierState.unlock(.shift)
+                self?.performAfterSettingsChange {
+                    if !enabled, $0.modifierState.locked == .shift {
+                        $0.modifierState.unlock(.shift)
+                    }
                 }
             }
             .store(in: &cancellables)
@@ -52,24 +69,33 @@ final class AppController: NSObject {
         settings.$rightOptionEnabled
             .dropFirst()
             .sink { [weak self] enabled in
-                guard let self else { return }
-                if !enabled, self.modifierState.pending == .option {
-                    self.modifierState.cancel()
+                self?.performAfterSettingsChange {
+                    if !enabled, $0.modifierState.pending == .option {
+                        $0.modifierState.cancel()
+                    }
+                    $0.updateEventTap()
                 }
-                self.updateEventTap()
             }
             .store(in: &cancellables)
 
         settings.$rightCommandEnabled
             .dropFirst()
             .sink { [weak self] enabled in
-                guard let self else { return }
-                if !enabled, self.modifierState.pending == .command {
-                    self.modifierState.cancel()
+                self?.performAfterSettingsChange {
+                    if !enabled, $0.modifierState.pending == .command {
+                        $0.modifierState.cancel()
+                    }
+                    $0.updateEventTap()
                 }
-                self.updateEventTap()
             }
             .store(in: &cancellables)
+    }
+
+    private func performAfterSettingsChange(_ action: @escaping @MainActor (AppController) -> Void) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            action(self)
+        }
     }
 
     /// Uruchamia kontroler i okresowe odświeżanie uprawnień.
@@ -84,7 +110,7 @@ final class AppController: NSObject {
 
         if !permissions.accessibilityGranted {
             Task { @MainActor [weak self] in
-                self?.showPermissions()
+                self?.showOptions()
             }
         }
 
@@ -104,10 +130,11 @@ final class AppController: NSObject {
         eventTap.stop()
     }
 
-    /// Odświeża uprawnienia i wyświetla okno z instrukcjami dostępu.
-    func showPermissions() {
+    /// Odświeża stan zależności systemowych i wyświetla okno opcji.
+    func showOptions() {
         permissions.refresh()
-        permissionsWindow.show()
+        launchAtLogin.refresh()
+        optionsWindow.show()
     }
 
     /// Displays information about the application and its authors.

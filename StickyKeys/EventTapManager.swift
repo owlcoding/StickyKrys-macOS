@@ -26,7 +26,7 @@ enum EventTapStatus: Equatable {
 @MainActor
 /// Przechwytuje globalne zdarzenia klawiatury i stosuje jednorazowy modyfikator.
 ///
-/// Prawy Shift, Option lub Command ustawia oczekujący modyfikator. Następne
+/// Shift, Option lub Command po wybranej stronie ustawia oczekujący modyfikator. Następne
 /// naciśnięcie zwykłego klawisza otrzymuje odpowiednią flagę, po czym stan jest czyszczony.
 final class EventTapManager: ObservableObject {
     /// Aktualny stan event tapu widoczny dla interfejsu użytkownika.
@@ -44,15 +44,15 @@ final class EventTapManager: ObservableObject {
 
     private var tap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
-    private var rightShiftIsDown = false
-    private var rightOptionIsDown = false
-    private var rightCommandIsDown = false
+    private var triggerShiftIsDown = false
+    private var triggerOptionIsDown = false
+    private var triggerCommandIsDown = false
     private var modifiedKey: ModifiedKey?
-    private var lastRightShiftTapTime: TimeInterval?
+    private var lastShiftTapTime: TimeInterval?
 
     /// Tworzy menedżer korzystający ze wskazanych ustawień i współdzielonego stanu modyfikatora.
     /// - Parameters:
-    ///   - settings: Ustawienia określające aktywne prawe klawisze wyzwalające.
+    ///   - settings: Ustawienia określające aktywne klawisze wyzwalające.
     ///   - modifierState: Stan jednorazowego modyfikatora aktualizowany przez zdarzenia.
     init(settings: SettingsStore, modifierState: ModifierState) {
         self.settings = settings
@@ -103,12 +103,17 @@ final class EventTapManager: ObservableObject {
         }
         runLoopSource = nil
         tap = nil
-        rightShiftIsDown = false
-        rightOptionIsDown = false
-        rightCommandIsDown = false
-        modifiedKey = nil
-        lastRightShiftTapTime = nil
+        resetTrackedState()
         status = newStatus
+    }
+
+    /// Czyści śledzone stany fizycznych klawiszy bez zatrzymywania event tapu.
+    func resetTrackedState() {
+        triggerShiftIsDown = false
+        triggerOptionIsDown = false
+        triggerCommandIsDown = false
+        modifiedKey = nil
+        lastShiftTapTime = nil
     }
 
     /// Przetwarza pojedyncze zdarzenie przekazane przez callback Core Graphics.
@@ -121,16 +126,16 @@ final class EventTapManager: ObservableObject {
 
         let keyCode = CGKeyCode(event.getIntegerValueField(.keyboardEventKeycode))
 
-        if keyCode == CGKeyCode(kVK_RightShift), settings.rightShiftEnabled {
-            return handleRightShift(type: type, event: event)
+        if keyCode == settings.triggerSide.shiftKeyCode, settings.rightShiftEnabled {
+            return handleTriggerShift(type: type, event: event)
         }
 
-        if keyCode == CGKeyCode(kVK_RightOption), settings.rightOptionEnabled {
-            return handleRightOption(type: type, event: event)
+        if keyCode == settings.triggerSide.optionKeyCode, settings.rightOptionEnabled {
+            return handleTriggerOption(type: type, event: event)
         }
 
-        if keyCode == CGKeyCode(kVK_RightCommand), settings.rightCommandEnabled {
-            return handleRightCommand(type: type, event: event)
+        if keyCode == settings.triggerSide.commandKeyCode, settings.rightCommandEnabled {
+            return handleTriggerCommand(type: type, event: event)
         }
 
         if keyCode == CGKeyCode(kVK_Escape), type == .keyDown, modifierState.hasActiveModifier {
@@ -160,96 +165,119 @@ final class EventTapManager: ObservableObject {
         return Unmanaged.passUnretained(event)
     }
 
-    private func handleRightShift(type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
+    private func handleTriggerShift(type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
         switch type {
         case .flagsChanged:
-            if rightShiftIsDown {
-                rightShiftIsDown = false
+            if triggerShiftIsDown {
+                triggerShiftIsDown = false
             } else {
-                rightShiftIsDown = true
-                handleRightShiftPress()
+                triggerShiftIsDown = true
+                handleTriggerShiftPress()
             }
             return nil
         case .keyDown:
-            guard !rightShiftIsDown else { return nil }
-            rightShiftIsDown = true
-            handleRightShiftPress()
+            guard !triggerShiftIsDown else { return nil }
+            triggerShiftIsDown = true
+            handleTriggerShiftPress()
             return nil
         case .keyUp:
-            rightShiftIsDown = false
+            triggerShiftIsDown = false
             return nil
         default:
             return Unmanaged.passUnretained(event)
         }
     }
 
-    private func handleRightShiftPress() {
+    private func handleTriggerShiftPress() {
         if modifierState.isLocked(.shift) {
             modifierState.unlock(.shift)
-            lastRightShiftTapTime = nil
+            lastShiftTapTime = nil
             return
         }
 
         let now = ProcessInfo.processInfo.systemUptime
-        let isQuickSecondTap = lastRightShiftTapTime.map {
+        let isQuickSecondTap = lastShiftTapTime.map {
             now - $0 <= Self.shiftLockDoubleTapInterval
         } ?? false
 
         if settings.rightShiftLockEnabled, modifierState.pending == .shift, isQuickSecondTap {
             modifierState.lock(.shift)
-            lastRightShiftTapTime = nil
+            lastShiftTapTime = nil
             return
         }
 
         modifierState.toggle(.shift)
-        lastRightShiftTapTime = now
+        lastShiftTapTime = now
     }
 
-    private func handleRightOption(type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
+    private func handleTriggerOption(type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
         switch type {
         case .flagsChanged:
             // Modifier keys arrive primarily as flagsChanged. Tracking this particular
-            // key's transitions avoids confusing Right Option with a held Left Option.
-            if rightOptionIsDown {
-                rightOptionIsDown = false
+            // key's transitions avoids confusing the trigger Option with the other side.
+            if triggerOptionIsDown {
+                triggerOptionIsDown = false
             } else {
-                rightOptionIsDown = true
+                triggerOptionIsDown = true
                 modifierState.toggle(.option)
             }
             return nil
         case .keyDown:
-            guard !rightOptionIsDown else { return nil }
-            rightOptionIsDown = true
+            guard !triggerOptionIsDown else { return nil }
+            triggerOptionIsDown = true
             modifierState.toggle(.option)
             return nil
         case .keyUp:
-            rightOptionIsDown = false
+            triggerOptionIsDown = false
             return nil
         default:
             return Unmanaged.passUnretained(event)
         }
     }
 
-    private func handleRightCommand(type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
+    private func handleTriggerCommand(type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
         switch type {
         case .flagsChanged:
-            if rightCommandIsDown {
-                rightCommandIsDown = false
+            if triggerCommandIsDown {
+                triggerCommandIsDown = false
             } else {
-                rightCommandIsDown = true
+                triggerCommandIsDown = true
                 modifierState.toggle(.command)
             }
             return nil
         case .keyDown:
-            guard !rightCommandIsDown else { return nil }
-            rightCommandIsDown = true
+            guard !triggerCommandIsDown else { return nil }
+            triggerCommandIsDown = true
             modifierState.toggle(.command)
             return nil
         case .keyUp:
-            rightCommandIsDown = false
+            triggerCommandIsDown = false
             return nil
         default:
             return Unmanaged.passUnretained(event)
+        }
+    }
+}
+
+private extension TriggerKeySide {
+    var shiftKeyCode: CGKeyCode {
+        switch self {
+        case .right: CGKeyCode(kVK_RightShift)
+        case .left: CGKeyCode(kVK_Shift)
+        }
+    }
+
+    var optionKeyCode: CGKeyCode {
+        switch self {
+        case .right: CGKeyCode(kVK_RightOption)
+        case .left: CGKeyCode(kVK_Option)
+        }
+    }
+
+    var commandKeyCode: CGKeyCode {
+        switch self {
+        case .right: CGKeyCode(kVK_RightCommand)
+        case .left: CGKeyCode(kVK_Command)
         }
     }
 }

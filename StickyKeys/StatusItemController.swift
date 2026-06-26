@@ -51,38 +51,12 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         addDisabledItem(controller.eventTap.status.displayText)
         menu.addItem(.separator())
 
-        addAction(
-            "Enable One-Shot Shift via Right Shift",
-            action: #selector(toggleRightShift),
-            state: controller.settings.rightShiftEnabled
-        )
-        addAction(
-            "Enable Shift Lock on Double Right Shift",
-            action: #selector(toggleRightShiftLock),
-            state: controller.settings.rightShiftLockEnabled
-        )
-        addAction(
-            "Enable One-Shot Option via Right Option",
-            action: #selector(toggleRightOption),
-            state: controller.settings.rightOptionEnabled
-        )
-        addAction(
-            "Enable One-Shot Command via Right Command",
-            action: #selector(toggleRightCommand),
-            state: controller.settings.rightCommandEnabled
-        )
-
         let cancel = addAction("Cancel Active Modifier", action: #selector(cancelActiveModifier))
         cancel.isEnabled = controller.modifierState.hasActiveModifier
 
         menu.addItem(.separator())
 
-        addAction(
-            "Launch at Login",
-            action: #selector(toggleLaunchAtLogin),
-            state: controller.launchAtLogin.isEnabled
-        )
-        addAction("Permissions…", action: #selector(openPermissions))
+        addAction("Options…", action: #selector(openOptions))
         addAction("About StickyKeys…", action: #selector(openAbout))
 
         if controller.eventTap.status == .failed {
@@ -122,32 +96,12 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         return controller.settings.capturesAnyTrigger ? "Enabled" : "Disabled"
     }
 
-    @objc private func toggleRightShift() {
-        controller.settings.rightShiftEnabled.toggle()
-    }
-
-    @objc private func toggleRightShiftLock() {
-        controller.settings.rightShiftLockEnabled.toggle()
-    }
-
-    @objc private func toggleRightOption() {
-        controller.settings.rightOptionEnabled.toggle()
-    }
-
-    @objc private func toggleRightCommand() {
-        controller.settings.rightCommandEnabled.toggle()
-    }
-
     @objc private func cancelActiveModifier() {
         controller.modifierState.cancel()
     }
 
-    @objc private func toggleLaunchAtLogin() {
-        controller.launchAtLogin.setEnabled(!controller.launchAtLogin.isEnabled)
-    }
-
-    @objc private func openPermissions() {
-        controller.showPermissions()
+    @objc private func openOptions() {
+        controller.showOptions()
     }
 
     @objc private func openAbout() {
