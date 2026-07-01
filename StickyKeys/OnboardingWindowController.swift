@@ -5,6 +5,7 @@ import SwiftUI
 /// Zarządza oknem pierwszorazowego przewodnika po aplikacji.
 final class OnboardingWindowController: NSWindowController, NSWindowDelegate {
     private let settings: SettingsStore
+    private let testFieldState = OnboardingTestFieldState()
 
     init(
         settings: SettingsStore,
@@ -16,6 +17,7 @@ final class OnboardingWindowController: NSWindowController, NSWindowDelegate {
         let rootView = OnboardingView(
             settings: settings,
             modifierState: modifierState,
+            testFieldState: testFieldState,
             finish: {
                 settings.onboardingCompleted = true
                 window.close()

@@ -14,20 +14,21 @@ enum EventTapStatus: Equatable {
     /// Tekst prezentowany użytkownikowi w menu aplikacji.
     var displayText: String {
         switch self {
-        case .stopped: "Keyboard capture stopped"
-        case .disabled: "Keyboard capture disabled"
-        case .needsAccessibility: "Keyboard capture needs Accessibility permission"
-        case .running: "Keyboard capture active"
-        case .failed: "Keyboard capture could not start — check Input Monitoring"
+        case .stopped: "Input capture stopped"
+        case .disabled: "Input capture disabled"
+        case .needsAccessibility: "Input capture needs Accessibility permission"
+        case .running: "Input capture active"
+        case .failed: "Input capture could not start — check Input Monitoring"
         }
     }
 }
 
 @MainActor
-/// Przechwytuje globalne zdarzenia klawiatury i stosuje jednorazowy modyfikator.
+/// Przechwytuje globalne zdarzenia wejścia i stosuje sticky modyfikator.
 ///
 /// Shift, Option lub Command po wybranej stronie ustawia oczekujący modyfikator. Następne
 /// naciśnięcie zwykłego klawisza otrzymuje odpowiednią flagę, po czym stan jest czyszczony.
+/// Zdarzenia myszy dostają aktywną flagę bez zużywania oczekującego modyfikatora.
 final class EventTapManager: ObservableObject {
     /// Aktualny stan event tapu widoczny dla interfejsu użytkownika.
     @Published private(set) var status: EventTapStatus = .stopped
@@ -48,6 +49,7 @@ final class EventTapManager: ObservableObject {
     private var triggerOptionIsDown = false
     private var triggerCommandIsDown = false
     private var modifiedKey: ModifiedKey?
+    private var modifiedMouseButtons: [Int64: [PendingModifier]] = [:]
     private var lastShiftTapTime: TimeInterval?
 
     /// Tworzy menedżer korzystający ze wskazanych ustawień i współdzielonego stanu modyfikatora.
@@ -72,6 +74,16 @@ final class EventTapManager: ObservableObject {
         let mask = CGEventMask(1 << CGEventType.keyDown.rawValue)
             | CGEventMask(1 << CGEventType.keyUp.rawValue)
             | CGEventMask(1 << CGEventType.flagsChanged.rawValue)
+            | CGEventMask(1 << CGEventType.leftMouseDown.rawValue)
+            | CGEventMask(1 << CGEventType.leftMouseUp.rawValue)
+            | CGEventMask(1 << CGEventType.rightMouseDown.rawValue)
+            | CGEventMask(1 << CGEventType.rightMouseUp.rawValue)
+            | CGEventMask(1 << CGEventType.otherMouseDown.rawValue)
+            | CGEventMask(1 << CGEventType.otherMouseUp.rawValue)
+            | CGEventMask(1 << CGEventType.leftMouseDragged.rawValue)
+            | CGEventMask(1 << CGEventType.rightMouseDragged.rawValue)
+            | CGEventMask(1 << CGEventType.otherMouseDragged.rawValue)
+            | CGEventMask(1 << CGEventType.scrollWheel.rawValue)
 
         let userInfo = Unmanaged.passUnretained(self).toOpaque()
         guard let eventTap = CGEvent.tapCreate(
@@ -113,6 +125,7 @@ final class EventTapManager: ObservableObject {
         triggerOptionIsDown = false
         triggerCommandIsDown = false
         modifiedKey = nil
+        modifiedMouseButtons = [:]
         lastShiftTapTime = nil
     }
 
@@ -122,6 +135,10 @@ final class EventTapManager: ObservableObject {
         if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
             if let tap { CGEvent.tapEnable(tap: tap, enable: true) }
             return Unmanaged.passUnretained(event)
+        }
+
+        if settings.mouseActionsEnabled, type.isMouseAction {
+            return handleMouseAction(type: type, event: event)
         }
 
         let keyCode = CGKeyCode(event.getIntegerValueField(.keyboardEventKeycode))
@@ -160,6 +177,39 @@ final class EventTapManager: ObservableObject {
             // modified keystroke. Auto-repeat keyDown events are handled by the branch above.
             event.flags.insert(modifiedKey.modifiers.eventFlags)
             self.modifiedKey = nil
+        }
+
+        return Unmanaged.passUnretained(event)
+    }
+
+    private func handleMouseAction(type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
+        if type == .scrollWheel {
+            let modifiers = modifierState.activeModifiers
+            if !modifiers.isEmpty {
+                event.flags.insert(modifiers.eventFlags)
+            }
+            return Unmanaged.passUnretained(event)
+        }
+
+        let buttonNumber = event.getIntegerValueField(.mouseEventButtonNumber)
+
+        switch type {
+        case .leftMouseDown, .rightMouseDown, .otherMouseDown:
+            let modifiers = modifierState.activeModifiers
+            if !modifiers.isEmpty {
+                event.flags.insert(modifiers.eventFlags)
+                modifiedMouseButtons[buttonNumber] = modifiers
+            }
+        case .leftMouseDragged, .rightMouseDragged, .otherMouseDragged:
+            if let modifiers = modifiedMouseButtons[buttonNumber] {
+                event.flags.insert(modifiers.eventFlags)
+            }
+        case .leftMouseUp, .rightMouseUp, .otherMouseUp:
+            if let modifiers = modifiedMouseButtons.removeValue(forKey: buttonNumber) {
+                event.flags.insert(modifiers.eventFlags)
+            }
+        default:
+            break
         }
 
         return Unmanaged.passUnretained(event)
@@ -278,6 +328,26 @@ private extension TriggerKeySide {
         switch self {
         case .right: CGKeyCode(kVK_RightCommand)
         case .left: CGKeyCode(kVK_Command)
+        }
+    }
+}
+
+private extension CGEventType {
+    var isMouseAction: Bool {
+        switch self {
+        case .leftMouseDown,
+             .leftMouseUp,
+             .rightMouseDown,
+             .rightMouseUp,
+             .otherMouseDown,
+             .otherMouseUp,
+             .leftMouseDragged,
+             .rightMouseDragged,
+             .otherMouseDragged,
+             .scrollWheel:
+            true
+        default:
+            false
         }
     }
 }

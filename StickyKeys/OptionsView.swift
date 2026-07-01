@@ -8,6 +8,8 @@ struct OptionsView: View {
     @ObservedObject var launchAtLogin: LaunchAtLoginManager
     /// Menedżer uprawnień systemowych.
     @ObservedObject var permissions: PermissionManager
+    /// Otwiera politykę prywatności aplikacji.
+    let showPrivacyPolicy: () -> Void
 
     /// Zawartość okna opcji.
     var body: some View {
@@ -37,6 +39,10 @@ struct OptionsView: View {
                     Toggle("\(settings.triggerSide.keyLabelPrefix) Command enables one-shot Command", isOn: $settings.rightCommandEnabled)
                 }
 
+                section("Mouse Actions") {
+                    Toggle("Enable modifiers for mouse click and scrolls", isOn: $settings.mouseActionsEnabled)
+                }
+
                 section("App") {
                     Toggle(
                         "Launch at Login",
@@ -51,10 +57,12 @@ struct OptionsView: View {
                             .font(.callout)
                             .foregroundStyle(.orange)
                     }
+
+                    Button("Privacy Policy", action: showPrivacyPolicy)
                 }
 
                 section("Permissions") {
-                    Text("StickyKeys needs permission to observe and suppress global keyboard events.")
+                    Text("StickyKeys needs permission to observe and suppress global keyboard and mouse events.")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)

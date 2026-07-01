@@ -3,6 +3,7 @@ import SwiftUI
 /// Presents information about StickyKeys, its purpose, and its authors.
 struct AboutView: View {
     private let website = URL(string: "http://bit.ly/sticckykeys")!
+    let showPrivacyPolicy: () -> Void
 
     var body: some View {
         VStack(spacing: 22) {
@@ -21,12 +22,12 @@ struct AboutView: View {
             }
 
             VStack(alignment: .leading, spacing: 16) {
-                informationRow(title: "Authors") {
-                    Text("Pawel Maczewski & Marta Maczewslka")
+                informationRow(title: "Author") {
+                    Text("Pawel Maczewski")
                 }
 
                 informationRow(title: "Purpose") {
-                    Text("StickyKeys makes keyboard shortcuts and typing easier by turning the right-side modifier keys into one-shot keys. We created it for health reasons when one of us temporarily could not use his left hand, allowing common key combinations to remain accessible with one hand.")
+                    Text("StickyKeys makes keyboard shortcuts, typing and mouse-clicks easier by turning the right-side modifier keys into one-shot keys. It was created for accessibility reasons when I temporarily could not use my left hand, allowing common key combinations to remain accessible with one hand.")
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
@@ -36,9 +37,11 @@ struct AboutView: View {
             }
             .padding(18)
             .background(.quaternary.opacity(0.45), in: RoundedRectangle(cornerRadius: 12))
+
+            Button("Privacy Policy", action: showPrivacyPolicy)
         }
         .padding(28)
-        .frame(width: 500, height: 390)
+        .frame(width: 500, height: 430)
     }
 
     private func informationRow<Content: View>(

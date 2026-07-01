@@ -1,14 +1,18 @@
+import Combine
 import SwiftUI
+
+@MainActor
+final class OnboardingTestFieldState: ObservableObject {
+    @Published var sampleText = "Try StickyKeys here"
+}
 
 /// Pierwszorazowy przewodnik po działaniu StickyKeys z polem do testowania skrótów.
 struct OnboardingView: View {
     @ObservedObject var settings: SettingsStore
     @ObservedObject var modifierState: ModifierState
+    @ObservedObject var testFieldState: OnboardingTestFieldState
 
     let finish: () -> Void
-
-    @State private var sampleText = "Try StickyKeys here"
-    @FocusState private var isTestFieldFocused: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
@@ -63,10 +67,9 @@ struct OnboardingView: View {
 
             section("Test Field") {
                 VStack(alignment: .leading, spacing: 10) {
-                    TextField("Type here", text: $sampleText, axis: .vertical)
+                    TextField("Type here", text: $testFieldState.sampleText, axis: .vertical)
                         .textFieldStyle(.roundedBorder)
                         .lineLimit(3...5)
-                        .focused($isTestFieldFocused)
 
                     HStack {
                         Text(modifierState.statusText)
@@ -74,8 +77,7 @@ struct OnboardingView: View {
                             .foregroundStyle(.secondary)
                         Spacer()
                         Button("Reset Text") {
-                            sampleText = "Try StickyKeys here"
-                            isTestFieldFocused = true
+                            testFieldState.sampleText = "Try StickyKeys here"
                         }
                     }
                 }
@@ -92,9 +94,6 @@ struct OnboardingView: View {
         .padding(28)
         .frame(width: 620)
         .frame(minHeight: 650)
-        .onAppear {
-            isTestFieldFocused = true
-        }
     }
 
     private var sideLabel: String {

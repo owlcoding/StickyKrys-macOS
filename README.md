@@ -7,6 +7,8 @@ StickyKeys is a native macOS menu-bar utility for one-shot modifier keys:
   **Right Shift** once to return to normal;
 - press and release **Right Option**, then press a key to apply **Option** once;
 - press and release **Right Command**, then press a key to apply **Command** once;
+- with **Enable modifiers for mouse click and scrolls** turned on, the pending
+  modifier is also applied to clicks, drags, and scroll events without consuming it;
 - press **Escape** or press the same non-locking trigger twice to cancel the pending
   modifier.
 
@@ -31,8 +33,11 @@ For normal use, archive/copy `StickyKeys.app` to `/Applications` before enabling
 
 ## Implementation notes
 
-- A session-level `CGEventTap` consumes trigger events and mutates only the following key event.
-- The app handles `keyDown`, `keyUp`, and `flagsChanged`. Modifier triggers normally arrive as `flagsChanged`.
+- A session-level `CGEventTap` consumes trigger events and mutates following key
+  events. Mouse actions receive the active modifier flags without consuming pending
+  state.
+- The app handles keyboard, mouse button, drag, and scroll events. Modifier triggers
+  normally arrive as `flagsChanged`.
 - Right Shift, Right Option, and Right Command are consumed as one-shot triggers, while their left-side counterparts continue to work as normal modifiers.
 - App Sandbox is disabled because a suppressing global event tap is incompatible with the sandboxed app model.
 - Preferences are persisted with `UserDefaults`; Launch at Login uses `SMAppService.mainApp`.

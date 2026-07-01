@@ -8,10 +8,12 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     private let statusItem: NSStatusItem
     private let menu = NSMenu()
     private var cancellables = Set<AnyCancellable>()
+    private var settingsStore: SettingsStore
 
     /// Tworzy element paska stanu powiązany z głównym kontrolerem aplikacji.
-    init(controller: AppController) {
+    init(controller: AppController, settingStore: SettingsStore) {
         self.controller = controller
+        self.settingsStore = settingStore
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         super.init()
 
@@ -37,13 +39,14 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         guard let button = statusItem.button else { return }
 //        button.image = NSImage.icon1
         button.image = NSImage(
-            systemSymbolName: "shift.fill",
+            systemSymbolName: settingsStore.triggerSide == .right ? "keyboard.onehanded.right" : "keyboard.onehanded.left",
             accessibilityDescription: "StickyKeys"
         )
         button.title = ""
         button.toolTip  = "StickyKeys — \(controller.modifierState.statusText)"
     }
 
+    
     private func rebuildMenu() {
         menu.removeAllItems()
 

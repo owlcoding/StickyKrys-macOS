@@ -37,7 +37,7 @@ enum PendingModifier: String, Sendable {
 }
 
 @MainActor
-/// Przechowuje jednorazowy i zablokowany modyfikator stosowany do klawiszy.
+/// Przechowuje jednorazowy i zablokowany modyfikator stosowany do klawiszy i myszy.
 final class ModifierState: ObservableObject {
     /// Aktualnie oczekujący modyfikator lub `nil`, gdy aplikacja jest gotowa.
     @Published private(set) var pending: PendingModifier?
@@ -65,6 +65,18 @@ final class ModifierState: ObservableObject {
     /// Informuje, czy istnieje modyfikator do anulowania lub zastosowania.
     var hasActiveModifier: Bool {
         pending != nil || locked != nil
+    }
+
+    /// Aktywne modyfikatory bez czyszczenia stanu jednorazowego.
+    var activeModifiers: [PendingModifier] {
+        var modifiers: [PendingModifier] = []
+        if let locked {
+            modifiers.append(locked)
+        }
+        if let pending, pending != locked {
+            modifiers.append(pending)
+        }
+        return modifiers
     }
 
     /// Ustawia modyfikator lub anuluje go, jeśli ten sam wyzwalacz naciśnięto ponownie.
@@ -106,15 +118,7 @@ final class ModifierState: ObservableObject {
     /// - Returns: Modyfikatory do zastosowania do najbliższego klawisza.
     func consumeForKey() -> [PendingModifier] {
         defer { pending = nil }
-
-        var modifiers: [PendingModifier] = []
-        if let locked {
-            modifiers.append(locked)
-        }
-        if let pending, pending != locked {
-            modifiers.append(pending)
-        }
-        return modifiers
+        return activeModifiers
     }
 
     /// Usuwa oczekujący modyfikator bez stosowania go do zdarzenia.

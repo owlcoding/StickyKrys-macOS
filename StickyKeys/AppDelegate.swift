@@ -17,7 +17,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // transient Dock icon when running an unsigned Debug build from Xcode.
         NSApp.setActivationPolicy(.accessory)
         AppController.shared.start()
-        statusItemController = StatusItemController(controller: AppController.shared)
+        statusItemController = StatusItemController(controller: AppController.shared, settingStore: .init(defaults: .standard))
         modifierHUDController = ModifierHUDController(
             modifierState: AppController.shared.modifierState
         )

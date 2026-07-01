@@ -2,7 +2,7 @@ import Combine
 import Foundation
 
 /// Strona klawiatury używana jako źródło sticky modyfikatorów.
-enum TriggerKeySide: String, CaseIterable, Identifiable {
+enum TriggerKeySide: String, CaseIterable, Identifiable, Equatable {
     case right
     case left
 
@@ -35,6 +35,7 @@ final class SettingsStore: ObservableObject {
         static let legacyCapsLockEnabled = "capsLockEnabled"
         static let rightOptionEnabled = "rightOptionEnabled"
         static let rightCommandEnabled = "rightCommandEnabled"
+        static let mouseActionsEnabled = "mouseActionsEnabled"
         static let onboardingCompleted = "onboardingCompleted"
     }
 
@@ -63,6 +64,11 @@ final class SettingsStore: ObservableObject {
         didSet { defaults.set(rightCommandEnabled, forKey: Key.rightCommandEnabled) }
     }
 
+    /// Włącza stosowanie oczekującego modyfikatora do kliknięć, przeciągania i przewijania.
+    @Published var mouseActionsEnabled: Bool {
+        didSet { defaults.set(mouseActionsEnabled, forKey: Key.mouseActionsEnabled) }
+    }
+
     /// Informuje, czy co najmniej jeden wyzwalacz wymaga aktywnego event tapu.
     var capturesAnyTrigger: Bool {
         rightShiftEnabled || rightOptionEnabled || rightCommandEnabled
@@ -89,6 +95,7 @@ final class SettingsStore: ObservableObject {
             Key.rightShiftLockEnabled: true,
             Key.rightOptionEnabled: true,
             Key.rightCommandEnabled: true,
+            Key.mouseActionsEnabled: false,
         ])
         // Dawne ustawienie Caps Lock jest jednorazowym źródłem wartości dla Shift.
         let storedTriggerSide = defaults.string(forKey: Key.triggerSide)
@@ -97,6 +104,7 @@ final class SettingsStore: ObservableObject {
         rightShiftLockEnabled = defaults.bool(forKey: Key.rightShiftLockEnabled)
         rightOptionEnabled = defaults.bool(forKey: Key.rightOptionEnabled)
         rightCommandEnabled = defaults.bool(forKey: Key.rightCommandEnabled)
+        mouseActionsEnabled = defaults.bool(forKey: Key.mouseActionsEnabled)
         triggerSide = storedTriggerSide ?? .right
     }
 }

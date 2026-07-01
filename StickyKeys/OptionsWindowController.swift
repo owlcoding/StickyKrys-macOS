@@ -8,12 +8,14 @@ final class OptionsWindowController: NSWindowController, NSWindowDelegate {
     init(
         settings: SettingsStore,
         launchAtLogin: LaunchAtLoginManager,
-        permissions: PermissionManager
+        permissions: PermissionManager,
+        showPrivacyPolicy: @escaping () -> Void
     ) {
         let rootView = OptionsView(
             settings: settings,
             launchAtLogin: launchAtLogin,
-            permissions: permissions
+            permissions: permissions,
+            showPrivacyPolicy: showPrivacyPolicy
         )
         let hostingController = NSHostingController(rootView: rootView)
         let window = NSWindow(contentViewController: hostingController)

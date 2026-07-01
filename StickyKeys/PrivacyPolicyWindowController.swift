@@ -2,17 +2,15 @@ import AppKit
 import SwiftUI
 
 @MainActor
-/// Manages the application's About window.
-final class AboutWindowController: NSWindowController, NSWindowDelegate {
-    init(showPrivacyPolicy: @escaping () -> Void) {
-        let hostingController = NSHostingController(
-            rootView: AboutView(showPrivacyPolicy: showPrivacyPolicy)
-        )
+/// Manages the application's Privacy Policy window.
+final class PrivacyPolicyWindowController: NSWindowController, NSWindowDelegate {
+    init() {
+        let hostingController = NSHostingController(rootView: PrivacyPolicyView())
         let window = NSWindow(contentViewController: hostingController)
 
-        window.title = "About StickyKeys"
+        window.title = "Privacy Policy"
         window.styleMask = [.titled, .closable]
-        window.setContentSize(NSSize(width: 500, height: 430))
+        window.setContentSize(NSSize(width: 540, height: 430))
         window.isReleasedWhenClosed = false
         window.center()
 
@@ -25,7 +23,7 @@ final class AboutWindowController: NSWindowController, NSWindowDelegate {
         fatalError("init(coder:) has not been implemented")
     }
 
-    /// Brings the existing About window to the foreground.
+    /// Brings the existing Privacy Policy window to the foreground.
     func show() {
         guard let window else { return }
         window.center()

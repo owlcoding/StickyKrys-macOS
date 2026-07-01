@@ -23,13 +23,21 @@ final class AppController: NSObject {
     private lazy var optionsWindow = OptionsWindowController(
         settings: settings,
         launchAtLogin: launchAtLogin,
-        permissions: permissions
+        permissions: permissions,
+        showPrivacyPolicy: { [weak self] in
+            self?.showPrivacyPolicy()
+        }
     )
     private lazy var onboardingWindow = OnboardingWindowController(
         settings: settings,
         modifierState: modifierState
     )
-    private lazy var aboutWindow = AboutWindowController()
+    private lazy var aboutWindow = AboutWindowController(
+        showPrivacyPolicy: { [weak self] in
+            self?.showPrivacyPolicy()
+        }
+    )
+    private lazy var privacyPolicyWindow = PrivacyPolicyWindowController()
     private var cancellables = Set<AnyCancellable>()
     private var permissionTimer: Timer?
     private var hasStarted = false
@@ -151,6 +159,11 @@ final class AppController: NSObject {
     /// Displays information about the application and its authors.
     func showAbout() {
         aboutWindow.show()
+    }
+
+    /// Displays the application's privacy policy.
+    func showPrivacyPolicy() {
+        privacyPolicyWindow.show()
     }
 
     /// Natychmiast odświeża stan uprawnień oraz zależny od niego event tap.
