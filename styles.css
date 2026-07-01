@@ -414,6 +414,13 @@ h3 {
   margin-bottom: 12px;
 }
 
+.pricing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-self: end;
+  gap: 12px;
+}
+
 .pricing .button {
   justify-self: end;
 }
@@ -455,6 +462,7 @@ h3 {
     padding-top: 36px;
   }
 
+  .pricing-actions,
   .pricing .button {
     justify-self: start;
   }
