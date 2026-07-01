@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>StickyKeys - One-Shot Modifier Keys for macOS</title>
+    <meta
+      name="description"
+      content="StickyKeys is a privacy-first macOS menu bar utility that turns one side of your modifier keys into one-shot Shift, Option, and Command keys."
+    >
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="StickyKeys home">
+        <span class="brand-mark">
+          <img src="assets/stickykeys-icon.svg" alt="">
+        </span>
+        <span>StickyKeys</span>
+      </a>
+      <nav class="nav" aria-label="Main navigation">
+        <a href="#features">Features</a>
+        <a href="#privacy">Privacy</a>
+        <a href="#pricing">Pricing</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Native macOS menu bar utility</p>
+          <h1>One-shot modifier keys for macOS.</h1>
+          <p class="lede">
+            StickyKeys turns your chosen side of Shift, Option, and Command into
+            one-shot modifiers, so common shortcuts stay reachable with one hand.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="#download">Get StickyKeys</a>
+            <a class="button secondary" href="#how-it-works">See how it works</a>
+          </div>
+        </div>
+
+        <div class="product-panel" aria-label="StickyKeys preview">
+          <div class="mac-window">
+            <div class="traffic-lights" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div class="window-body">
+              <div class="hud-preview">
+                <span class="modifier-symbol">⇧</span>
+                <span class="lock-dot"></span>
+              </div>
+              <div class="shortcut-demo">
+                <span>Right Shift</span>
+                <span class="then">then</span>
+                <span>A</span>
+                <strong>A</strong>
+              </div>
+              <div class="settings-preview">
+                <div>
+                  <span class="toggle on"></span>
+                  <p>One-shot Shift</p>
+                </div>
+                <div>
+                  <span class="toggle on"></span>
+                  <p>One-shot Option</p>
+                </div>
+                <div>
+                  <span class="toggle on"></span>
+                  <p>One-shot Command</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section intro" id="how-it-works">
+        <div>
+          <p class="eyebrow">Designed for access</p>
+          <h2>Press a modifier once. Use it on the next action.</h2>
+        </div>
+        <p>
+          Press and release your selected Shift, Option, or Command key, then type,
+          click, drag, or scroll. StickyKeys applies the modifier to that action
+          and returns to normal. Double-tap Shift to keep Shift Lock on.
+        </p>
+      </section>
+
+      <section class="feature-grid" id="features" aria-label="Features">
+        <article>
+          <span class="feature-icon">⇧</span>
+          <h3>Sticky Shift with lock</h3>
+          <p>Use Shift once for the next keypress, or double-tap it to keep Shift active until you turn it off.</p>
+        </article>
+        <article>
+          <span class="feature-icon">⌥</span>
+          <h3>Option without finger gymnastics</h3>
+          <p>Make alternate characters and Option shortcuts easier when one side of the keyboard is hard to reach.</p>
+        </article>
+        <article>
+          <span class="feature-icon">⌘</span>
+          <h3>Command shortcuts one-handed</h3>
+          <p>Run common macOS shortcuts like Command-A without having to hold two keys at once.</p>
+        </article>
+        <article>
+          <span class="feature-icon">●</span>
+          <h3>Clear visual HUD</h3>
+          <p>A small non-interactive HUD shows the pending modifier and disappears when the action is used or cancelled.</p>
+        </article>
+        <article>
+          <span class="feature-icon">↔</span>
+          <h3>Choose left or right</h3>
+          <p>Pick the side that is easier to reach. The other side keeps behaving like a normal modifier key.</p>
+        </article>
+        <article>
+          <span class="feature-icon">⌁</span>
+          <h3>Mouse actions too</h3>
+          <p>Optionally apply pending modifiers to clicks, drags, and scroll events for broader macOS workflows.</p>
+        </article>
+      </section>
+
+      <section class="section privacy" id="privacy">
+        <div>
+          <p class="eyebrow">Privacy first</p>
+          <h2>No network use. No analytics. No key logging.</h2>
+        </div>
+        <div class="privacy-list">
+          <p>
+            StickyKeys needs Accessibility and Input Monitoring permissions to
+            observe modifier keys and apply them locally on your Mac.
+          </p>
+          <ul>
+            <li>Does not connect to the internet.</li>
+            <li>Does not log keystrokes, shortcuts, typed text, or mouse actions.</li>
+            <li>Stores preferences locally in macOS UserDefaults.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="pricing" id="pricing">
+        <div>
+          <p class="eyebrow">Simple pricing</p>
+          <h2>$2.99</h2>
+          <p>
+            A small, focused utility with a clear accessibility use case is a good
+            fit for a low one-time price.
+          </p>
+        </div>
+        <a class="button primary" href="#download">Download for macOS</a>
+      </section>
+
+      <section class="download" id="download">
+        <h2>Built for macOS 13 and newer.</h2>
+        <p>
+          StickyKeys lives in the menu bar and can launch at login. Grant macOS
+          Accessibility and Input Monitoring permissions once, then keep working.
+        </p>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>© 2026 StickyKeys. Created by Pawel Maczewski.</p>
+      <a href="#top">Back to top</a>
+    </footer>
+  </body>
+</html>
