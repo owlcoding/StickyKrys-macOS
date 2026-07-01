@@ -417,12 +417,26 @@ h3 {
 .pricing-actions {
   display: flex;
   flex-wrap: wrap;
-  justify-self: end;
   gap: 12px;
 }
 
 .pricing .button {
   justify-self: end;
+}
+
+.purchase-panel {
+  display: grid;
+  justify-self: end;
+  gap: 14px;
+  width: min(100%, 552px);
+}
+
+.purchase-panel iframe {
+  width: 100%;
+  max-width: 552px;
+  border: 0;
+  border-radius: 8px;
+  background: #fff;
 }
 
 .download {
@@ -463,6 +477,7 @@ h3 {
   }
 
   .pricing-actions,
+  .purchase-panel,
   .pricing .button {
     justify-self: start;
   }
@@ -513,6 +528,10 @@ h3 {
 
   .pricing {
     padding: 30px 24px;
+  }
+
+  .purchase-panel iframe {
+    height: 167px;
   }
 
   .footer {
