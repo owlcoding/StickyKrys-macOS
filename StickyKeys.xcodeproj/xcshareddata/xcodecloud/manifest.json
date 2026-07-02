@@ -1,0 +1,9 @@
+{
+  "id" : "8b1edbd3-f392-4275-a2bf-c2a681097e30",
+  "targets" : [
+    {
+      "id" : "e5290d7b-78d2-46a4-97d0-2651df4e9685",
+      "name" : "StickyKeys"
+    }
+  ]
+}
